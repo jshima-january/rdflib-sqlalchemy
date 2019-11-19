@@ -391,6 +391,40 @@ class GraphTestCase(unittest.TestCase):
     # - repeat the above two for type triples
     # - test with quoted graphs (not even sure how that works)
 
+    def test_type_add(self):
+        trip = (URIRef('http://example.org#type-add'), RDF.type, URIRef('http://example.org/cra'))
+        self.graph.add(trip)
+        self.graph.add(trip)
+
+    def test_type_addn(self):
+        quad = (URIRef('http://example.org#type-addn'), RDF.type, URIRef('http://example.org/cra'), self.graph)
+        self.graph.addN([quad, quad])
+
+    def test_add(self):
+        trip = (URIRef('http://example.org#add'), URIRef('http://example.org/blah'), URIRef('http://example.org/cra'))
+        self.graph.add(trip)
+        self.graph.add(trip)
+
+    def test_addn(self):
+        quad = (URIRef('http://example.org#addn'),
+                URIRef('http://example.org/blah'),
+                URIRef('http://example.org/cra'),
+                self.graph)
+        self.graph.addN([quad, quad])
+
+    def test_namespace_change_prefix_binding(self):
+        nm = self.graph.namespace_manager
+        nm.bind('change_binding', URIRef('http://example.org/change-binding-1#'),
+                replace=True)
+        nm.bind('change_binding', URIRef('http://example.org/change-binding-2#'),
+                replace=True)
+        assert ('change_binding',
+                URIRef('http://example.org/change-binding-2#')) in list(nm.namespaces())
+
+    def test_namespace_rebind_prefix(self):
+        nm = self.graph.namespace_manager
+        nm.bind('rebind', URIRef('http://example.org/rebind#'))
+        nm.bind('rebind', URIRef('http://example.org/rebind#'))
 
 xmltestdoc = """<?xml version="1.0" encoding="UTF-8"?>
 <rdf:RDF

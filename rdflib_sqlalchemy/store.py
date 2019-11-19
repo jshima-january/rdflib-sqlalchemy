@@ -324,7 +324,12 @@ class SQLAlchemy(Store, SQLGeneratorMixin, StatisticsMixin):
         statement = self._add_ignore_on_conflict(statement)
         with self.engine.begin() as connection:
             try:
-                connection.execute(statement, params)
+                if self.engine.name == 'postgresql':
+                    connection.execute(statement.suffix_with('ON CONFLICT DO NOTHING'), params)
+                elif self.engine.name in ('sqlite', 'mysql'):
+                    connection.execute(statement.prefix_with('OR REPLACE'), params)
+                else:
+                    connection.execute(statement, params)
             except Exception:
                 _logger.exception(
                     "Add failed with statement: %s, params: %s",
@@ -351,7 +356,12 @@ class SQLAlchemy(Store, SQLGeneratorMixin, StatisticsMixin):
         with self.engine.begin() as connection:
             try:
                 for command in commands_dict.values():
-                    statement = self._add_ignore_on_conflict(command['statement'])
+                    if self.engine.name == 'postgresql':
+                        statement =  self._add_ignore_on_conflict(command['statement'].suffix_with('ON CONFLICT DO NOTHING'))
+                    elif self.engine.name == 'sqlite' or self.engine.name == 'mysql':
+                        statement = self._add_ignore_on_conflict(command['statement'].prefix_with('OR REPLACE'))
+                    else:
+                        statement = self._add_ignore_on_conflict(command['statement'])
                     connection.execute(statement, command["params"])
             except Exception:
                 _logger.exception("AddN failed.")

@@ -325,7 +325,7 @@ class SQLAlchemy(Store, SQLGeneratorMixin, StatisticsMixin):
         with self.engine.begin() as connection:
             try:
                 if self.engine.name == 'postgresql':
-                    connection.execute(statement.suffix_with('ON CONFLICT DO NOTHING'), params)
+                    connection.execute(statement.on_conflict_do_nothing(params))
                 elif self.engine.name in ('sqlite', 'mysql'):
                     connection.execute(statement.prefix_with('OR REPLACE'), params)
                 else:
@@ -357,7 +357,7 @@ class SQLAlchemy(Store, SQLGeneratorMixin, StatisticsMixin):
             try:
                 for command in commands_dict.values():
                     if self.engine.name == 'postgresql':
-                        statement =  self._add_ignore_on_conflict(command['statement'].suffix_with('ON CONFLICT DO NOTHING'))
+                        statement = self._add_ignore_on_conflict(command['statement'].on_conflict_do_nothing())
                     elif self.engine.name == 'sqlite' or self.engine.name == 'mysql':
                         statement = self._add_ignore_on_conflict(command['statement'].prefix_with('OR REPLACE'))
                     else:
